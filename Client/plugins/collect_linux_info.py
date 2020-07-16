@@ -59,7 +59,7 @@ def get_os_info():
 
 def get_cpu_info():
     """
-    获取cpu信息
+    获取cpu信息 success
     :return:
     """
     raw_cmd = 'cat /proc/cpuinfo'
@@ -221,15 +221,18 @@ def get_disk_info():
     如果需要查看Raid信息，可以尝试MegaCli工具。
     :return:
     """
+    model, size, sn = "", "", ""
     raw_data = subprocess.Popen("sudo hdparm -i /dev/sda | grep Model", stdout=subprocess.PIPE, shell=True)
     raw_data = raw_data.stdout.read().decode()
     data_list = raw_data.split(",")
-    model = data_list[0].split("=")[1]
-    sn = data_list[2].split("=")[1].strip()
+    if data_list[0] != '':
+        model = data_list[0].split("=")[1]
+        sn = data_list[2].split("=")[1].strip()
 
     size_data = subprocess.Popen("sudo fdisk -l /dev/sda | grep Disk|head -1", stdout=subprocess.PIPE, shell=True)
     size_data = size_data.stdout.read().decode()
-    size = size_data.split(":")[1].strip().split(" ")[0]
+    if size_data != '':
+        size = size_data.split(":")[1].strip().split(" ")[0]
 
     result = {'physical_disk_driver': []}
     disk_dict = dict()

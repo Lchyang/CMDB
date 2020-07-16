@@ -1,4 +1,10 @@
 import json
+import time
+import urllib.parse
+import urllib.request
+from core import info_collection
+from conf import setting
+
 
 
 class ArgvHandler:
@@ -50,13 +56,13 @@ class ArgvHandler:
         # 将数据打包到一个字典内，并转换为json格式
         data = {"asset_data": json.dumps(asset_data)}
         # 根据settings中的配置，构造url
-        url = "http://%s:%s%s" % (settings.Params['server'], settings.Params['port'], settings.Params['url'])
+        url = "http://%s:%s%s" % (setting.Params['server'], setting.Params['port'], setting.Params['url'])
         print('正在将数据发送至： [%s]  ......' % url)
         try:
             # 使用Python内置的urllib.request库，发送post请求。
             # 需要先将数据进行封装，并转换成bytes类型
             data_encode = urllib.parse.urlencode(data).encode()
-            response = urllib.request.urlopen(url=url, data=data_encode, timeout=settings.Params['request_timeout'])
+            response = urllib.request.urlopen(url=url, data=data_encode, timeout=setting.Params['request_timeout'])
             print("\033[31;1m发送完毕！\033[0m ")
             message = response.read().decode()
             print("返回结果：%s" % message)
@@ -64,7 +70,7 @@ class ArgvHandler:
             message = '发送失败' + "   错误原因：  {}".format(e)
             print("\033[31;1m发送失败，错误原因： %s\033[0m" % e)
         # 记录发送日志
-        with open(settings.PATH, 'ab') as f:  # 以byte的方式写入，防止出现编码错误
+        with open(setting.PATH, 'ab') as f:  # 以byte的方式写入，防止出现编码错误
             log = '发送时间：%s \t 服务器地址：%s \t 返回结果：%s \n' % (time.strftime('%Y-%m-%d %H:%M:%S'), url, message)
             f.write(log.encode())
             print("日志记录成功！")
