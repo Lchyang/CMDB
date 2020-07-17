@@ -49,11 +49,16 @@ def get_os_info():
                                stdout=subprocess.PIPE, shell=True)
 
     release = release.stdout.read().decode().split(":")
+
+    os_type = subprocess.Popen("cat /etc/redhat-release",
+                               stdout=subprocess.PIPE, shell=True)
+    os_type = os_type.stdout.read().decode()
     data_dic = {
         "os_distribution": distributor[1].strip() if len(distributor) > 1 else "",
         "os_release": release[1].strip() if len(release) > 1 else "",
-        "os_type": "Linux",
+        "os_type": os_type if os_type else "",
     }
+    print("操作系统数据{}".format(data_dic))
     return data_dic
 
 
@@ -78,7 +83,7 @@ def get_cpu_info():
             print(e)
             raw_data[key] = ""
 
-    data = {
+    r_data = {
         "cpu_count": raw_data["cpu_count"],
         "cpu_core_count": raw_data["cpu_core_count"]
     }
@@ -86,11 +91,12 @@ def get_cpu_info():
     cpu_model = raw_data["cpu_model"].split(":")
 
     if len(cpu_model) > 1:
-        data["cpu_model"] = cpu_model[1].strip()
+        r_data["cpu_model"] = cpu_model[1].strip()
     else:
-        data["cpu_model"] = ''
+        r_data["cpu_model"] = ''
 
-    return data
+    print("cpu数据{}".format(r_data))
+    return r_data
 
 
 def get_ram_info():
@@ -109,44 +115,62 @@ def get_ram_info():
         else:
             item_list.append(line.strip())
 
-    ram_list = []
-    for item in raw_ram_list:
-        item_ram_size = 0
-        ram_item_to_dic = {}
-        for i in item:
-            data = i.split(":")
-            if len(data) == 2:
-                key, v = data
-                if key == 'Size':
-                    if v.strip() != "No Module Installed":
-                        ram_item_to_dic['capacity'] = v.split()[0].strip()
-                        item_ram_size = round(v.split()[0])
-                    else:
-                        ram_item_to_dic['capacity'] = 0
+    ram_item_to_dic = {}
+    for item in item_list:
+        data = item.split(":")
+        if len(data) == 2:
+            key, v = data
+            if key == "Size":
+                if v.strip() != "No Module Installed":
+                    ram_item_to_dic['capacity'] = v.split()[0].strip()
+                else:
+                    ram_item_to_dic['capacity'] = 0
 
-                if key == 'Type':
-                    ram_item_to_dic['model'] = v.strip()
-                if key == 'Manufacturer':
-                    ram_item_to_dic['manufacturer'] = v.strip()
-                if key == 'Serial Number':
-                    ram_item_to_dic['sn'] = v.strip()
-                if key == 'Asset Tag':
-                    ram_item_to_dic['asset_tag'] = v.strip()
-                if key == 'Locator':
-                    ram_item_to_dic['slot'] = v.strip()
+            if key == 'Type':
+                ram_item_to_dic['model'] = v.strip()
+            if key == 'Manufacturer':
+                ram_item_to_dic['manufacturer'] = v.strip()
+            if key == 'Serial Number':
+                ram_item_to_dic['sn'] = v.strip()
+            if key == 'Asset Tag':
+                ram_item_to_dic['asset_tag'] = v.strip()
+            if key == 'Locator':
+                ram_item_to_dic['slot'] = v.strip()
 
-        if item_ram_size == 0:
-            pass
-        else:
-            ram_list.append(ram_item_to_dic)
+    # for item in raw_ram_list:
+    #     item_ram_size = 0
+    #     ram_item_to_dic = {}
+    #     for i in item:
+    #         data = i.split(":")
+    #         if len(data) == 2:
+    #             key, v = data
+    #             if key == 'Size':
+    #                 if v.strip() != "No Module Installed":
+    #                 ram_item_to_dic['capacity'] = v.split()[0].strip()
+    #                 item_ram_size = round(v.split()[0])
+    #             else:
+    #                 ram_item_to_dic['capacity'] = 0
+    #
+    #         if key == 'Type':
+    #             ram_item_to_dic['model'] = v.strip()
+    #         if key == 'Manufacturer':
+    #             ram_item_to_dic['manufacturer'] = v.strip()
+    #         if key == 'Serial Number':
+    #             ram_item_to_dic['sn'] = v.strip()
+    #         if key == 'Asset Tag':
+    #             ram_item_to_dic['asset_tag'] = v.strip()
+    #         if key == 'Locator':
+    #             ram_item_to_dic['slot'] = v.strip()
 
+    # 获取内存大小
     raw_total_size = subprocess.Popen("cat /proc/meminfo|grep MemTotal ", stdout=subprocess.PIPE, shell=True)
     raw_total_size = raw_total_size.stdout.read().decode().split(":")
-    ram_data = {'ram': ram_list}
+    ram_data = {'ram': ram_item_to_dic}
     if len(raw_total_size) == 2:
         total_gb_size = int(raw_total_size[1].split()[0]) / 1024 ** 2
         ram_data['ram_size'] = total_gb_size
 
+    print("内存数据{}".format(ram_data))
     return ram_data
 
 
@@ -210,6 +234,7 @@ def get_nic_info():
     for k, v in nic_dic.items():
         nic_list.append(v)
 
+    print("网卡信息{}".format(nic_list))
     return {'nic': nic_list}
 
 
@@ -241,6 +266,7 @@ def get_disk_info():
     disk_dict["sn"] = sn
     result['physical_disk_driver'].append(disk_dict)
 
+    print("存储信息{}".format(result))
     return result
 
 
