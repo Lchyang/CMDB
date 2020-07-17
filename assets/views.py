@@ -1,6 +1,8 @@
 from django.shortcuts import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 
 
+@csrf_exempt
 def report(request):
     if request.method == "POST":
         asset_data = request.POST.get('asset_data')

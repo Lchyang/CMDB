@@ -6,7 +6,6 @@ from core import info_collection
 from conf import setting
 
 
-
 class ArgvHandler:
     """
     处理参数
@@ -17,8 +16,10 @@ class ArgvHandler:
         self.handler_arg()
 
     def handler_arg(self):
+        print("准备分析参数")
         if len(self.argv) > 1 and hasattr(self, self.argv[1]):
-            getattr(self, self.argv[1])
+            func = getattr(self, self.argv[1])
+            func()
         else:
             self.help_message()
 
@@ -35,7 +36,6 @@ class ArgvHandler:
             report_data         收集硬件信息并汇报
             '''
         print(msg)
-
 
     @staticmethod
     def collect_data():
@@ -74,3 +74,7 @@ class ArgvHandler:
             log = '发送时间：%s \t 服务器地址：%s \t 返回结果：%s \n' % (time.strftime('%Y-%m-%d %H:%M:%S'), url, message)
             f.write(log.encode())
             print("日志记录成功！")
+
+
+if __name__ == "__main__":
+    ArgvHandler.report_data()

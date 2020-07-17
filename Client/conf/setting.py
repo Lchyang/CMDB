@@ -2,8 +2,8 @@ import os
 
 # 远端接收数据的服务器
 Params = {
-    "server": "192.168.0.100",
-    "port": 8000,
+    "server": "111.162.23.52",
+    "port": 8002,
     'url': '/assets/report/',
     'request_timeout': 30,
 }
